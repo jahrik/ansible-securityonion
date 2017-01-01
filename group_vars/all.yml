@@ -1,0 +1,64 @@
+---
+management:
+  mgmt_interface: 'eth0'
+  mgmt_config_type: 'static'
+  address: '192.168.10.105'
+  netmask: '255.255.255.0'
+  gateway: '192.168.10.1'
+  nameserver: ['8.8.8.8', '8.8.4.4']
+  domain: 'dojo.io'
+sniffing:
+  sniffing_interfaces: ['eth1']
+master:
+  server: '1'
+  servername: 'localhost'
+  ssh_username: ''
+  sguil_server_name: 'securityonion'
+  sguil_client_username: 'onionuser'
+  sguil_client_password_1: 'asdfasdf'
+  snorby_email: 'onionuser@example.com'
+master_services:
+  snorby_enabled: 'yes'
+  xplico_enabled: 'no'
+elsa:
+  enabled: 'YES'
+  update_elsa_server: 'YES'
+  log_size_limit: '10000000000'
+services:
+  ossec_agent_enabled: 'yes'
+  ossec_agent_level: '5'
+  salt: 'yes'
+sensor:
+  sensor: '1'
+sensor_services:
+  bro_enabled: 'yes'
+  ids_engine_enabled: 'yes'
+  snort_agent_enabled: 'yes'
+  barnyard2_enabled: 'yes'
+  pcap_enabled: 'yes'
+  pcap_agent_enabled: 'yes'
+  prads_enabled: 'no'
+  sancp_agent_enabled: 'no'
+  pads_agent_enabled: 'no'
+  http_agent_enabled: 'no'
+  argus_enabled: 'no'
+rules:
+  ids_rules: 'ETGPL'
+  oinkcode: ''
+pf_ring: 
+  pf_ring_slots: '4096'
+ids_config:
+  ids_engine: 'snort'
+  ids_lb_procs: '1'
+bro_config:
+  bro_lb_procs: ''
+  extract_files: 'yes'
+pcap_config:
+  pcap_size: '150'
+  pcap_ring_size: '64'
+  pcap_options: ''
+maintenance:
+  warn_disk_usage: '80'
+  crit_disk_usage: '90'
+  daystokeep: '30'
+  daystorepair: '7'
