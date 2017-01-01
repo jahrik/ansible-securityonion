@@ -1,0 +1,34 @@
+---
+- hosts: all
+  become: true
+  become_method: sudo
+  roles:
+  tasks:
+
+  - name: Add securityonion repo
+    apt_repository:
+      repo=ppa:securityonion/stable
+      state=present
+    when: ansible_distribution == 'Ubuntu'
+
+  - name: Install packages
+    apt:
+      name={{item}}
+      state=present
+      update_cache=yes
+    with_items:
+      - syslog-ng-core
+      - syslog-ng
+      - securityonion-elsa
+      - securityonion-elsa-extras
+      - securityonion-all
+    when: ansible_distribution == 'Ubuntu'
+    tags: [ "package" ]
+
+  - name: Generate sosetup.conf
+    template:
+      src=templates/sosetup.conf.j2
+      dest=/etc/nsm/sosetup.conf
+      owner=root
+      group=root
+      mode=0600
