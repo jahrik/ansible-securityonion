@@ -2,6 +2,8 @@
 - hosts: all
   become: true
   become_method: sudo
+  vars_files:
+    - ./vars/snort_rules.yml
   roles:
   tasks:
 
@@ -32,3 +34,22 @@
       owner=root
       group=root
       mode=0600
+
+  - name: Run sosetup -f sosetup.conf
+    command: echo 'yes' | sosetup -f /etc/nsm/sosetup.conf | tee /var/log/sosetup.log
+    args:
+      chdir: /etc/nsm/
+      creates: /etc/nsm/sosetup_initial.lock
+
+  # Reboot and wait to come back up
+  # Run setup again
+
+  # Post installation
+  - name: Generate local.rules
+    template:
+      src=templates/local.rules.j2
+      dest=/etc/nsm/rules/local.rules
+      owner=squil
+      group=squil
+      mode=0600
+
