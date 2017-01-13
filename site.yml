@@ -43,18 +43,18 @@
       port=2222
     tags: [ "firewall" ]
 
-  - name: Run sosetup -f sosetup.conf
-    ignore_errors: true
-    shell: "echo 'yes' | sosetup -f /etc/nsm/sosetup.conf | tee /var/log/sosetup.log"
-    args:
-      chdir: /etc/nsm/
-      creates: /etc/nsm/sosetup_initial.lock
-    tags: [ "setup" ]
-
-  - name: waiting for server to come back
-    local_action: wait_for host={{ inventory_hostname }}
-      state=started
-    sudo: false
+#  - name: Run sosetup -f sosetup.conf
+#    ignore_errors: true
+#    shell: "echo 'yes' | sosetup -f /etc/nsm/sosetup.conf | tee /var/log/sosetup.log"
+#    args:
+#      chdir: /etc/nsm/
+#      creates: /etc/nsm/sosetup_initial.lock
+#    tags: [ "setup" ]
+#
+#  - name: waiting for server to come back
+#    local_action: wait_for host={{ inventory_hostname }}
+#      state=started
+#    sudo: false
 
   # Run setup again
 
