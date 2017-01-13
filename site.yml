@@ -12,6 +12,7 @@
       repo=ppa:securityonion/stable
       state=present
     when: ansible_distribution == 'Ubuntu'
+    tags: [ "apt" ]
 
   - name: Install packages
     apt:
@@ -25,7 +26,7 @@
       - securityonion-elsa-extras
       - securityonion-all
     when: ansible_distribution == 'Ubuntu'
-    tags: [ "package" ]
+    tags: [ "apt" ]
 
   - name: Generate sosetup.conf
     template:
@@ -34,14 +35,27 @@
       owner=root
       group=root
       mode=0600
+    tags: [ "setup" ]
+
+  - name:
+    ufw:
+      rule=allow
+      port=2222
+    tags: [ "firewall" ]
 
   - name: Run sosetup -f sosetup.conf
-    command: echo 'yes' | sosetup -f /etc/nsm/sosetup.conf | tee /var/log/sosetup.log
+    ignore_errors: true
+    shell: "echo 'yes' | sosetup -f /etc/nsm/sosetup.conf | tee /var/log/sosetup.log"
     args:
       chdir: /etc/nsm/
       creates: /etc/nsm/sosetup_initial.lock
+    tags: [ "setup" ]
 
-  # Reboot and wait to come back up
+  - name: waiting for server to come back
+    local_action: wait_for host={{ inventory_hostname }}
+      state=started
+    sudo: false
+
   # Run setup again
 
   # Post installation
@@ -49,7 +63,7 @@
     template:
       src=templates/local.rules.j2
       dest=/etc/nsm/rules/local.rules
-      owner=squil
-      group=squil
+      owner=sguil
+      group=sguil
       mode=0600
 

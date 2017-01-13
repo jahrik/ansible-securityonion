@@ -51,7 +51,7 @@ ids_config:
   ids_engine: 'snort'
   ids_lb_procs: '1'
 bro_config:
-  bro_lb_procs: ''
+  bro_lb_procs: '1'
   extract_files: 'yes'
 pcap_config:
   pcap_size: '150'
