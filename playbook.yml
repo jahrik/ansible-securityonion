@@ -1,0 +1,108 @@
+---
+- hosts: all
+  become: true
+  become_method: sudo
+  vars_files:
+    - ./vars/snort_rules.yml
+  roles:
+  tasks:
+
+  - name: Add securityonion repo
+    apt_repository:
+      repo: 'ppa:securityonion/stable'
+      state: present
+    when: ansible_distribution == 'Ubuntu'
+    tags: [ "apt" ]
+
+  # Configure MySQL not to prompt for root password
+  # (Setup will generate a random password later):
+  - name: Add securityonion repo
+    command: 'echo "debconf debconf/frontend select noninteractive" | debconf-set-selections'
+    when: ansible_distribution == 'Ubuntu'
+    tags: [ "apt" ]
+
+  - name: Install packages
+    apt:
+      name: "{{item}}"
+      state: present
+      update_cache: yes
+    with_items:
+      - syslog-ng-core
+      - securityonion-all
+    when: ansible_distribution == 'Ubuntu'
+    tags: [ "apt" ]
+
+  - name: Generate sosetup.conf
+    template:
+      src: templates/sosetup.conf.j2
+      dest: /etc/nsm/sosetup.conf
+      owner: root
+      group: root
+      mode: 0600
+    tags: [ "setup" ]
+
+#   - name:
+#     ufw:
+#       rule=allow
+#       port=2222
+#     tags: [ "firewall" ]
+
+#  - name: Run sosetup -f sosetup.conf
+#    ignore_errors: true
+#    shell: "echo 'yes' | sosetup -f /etc/nsm/sosetup.conf | tee /var/log/sosetup.log"
+#    args:
+#      chdir: /etc/nsm/
+#      creates: /etc/nsm/sosetup_initial.lock
+#    tags: [ "setup" ]
+#
+#  - name: waiting for server to come back
+#    local_action: wait_for host={{ inventory_hostname }}
+#      state=started
+#    sudo: false
+
+#   # Run setup again
+# 
+#   # Post installation
+#   - name: Generate local.rules
+#     template:
+#       src: templates/local.rules.j2
+#       dest: /etc/nsm/rules/local.rules
+#       owner: sguil
+#       group: sguil
+#       mode: 0600
+
+# First, check the Hardware Requirements page.
+# Download the ISO image for your preferred flavor of Ubuntu 16.04, verify the ISO image, and boot from it.
+# Follow the prompts in the installer. When prompted to encrypt home folder or encrypt partition option, DO NOT enable this feature. When asked about automatic updates, DO NOT enable automatic updates.
+# Reboot into your new installation.
+# Login using the username/password you specified during installation.
+# Verify that you have Internet connectivity. If necessary, configure your proxy settings.
+# Log back in (using ssh -X if you’re installing on Ubuntu Server or a headless distro).
+#
+# Configure MySQL not to prompt for root password (Setup will generate a random password later):
+# echo "debconf debconf/frontend select noninteractive" | sudo debconf-set-selections
+#
+# Clean apt list repository:
+# sudo rm -rf /var/lib/apt/lists/*
+# sudo apt-get update
+#
+# Add the Security Onion stable repository:
+# sudo apt-get -y install software-properties-common
+# sudo add-apt-repository -y ppa:securityonion/stable
+# sudo apt-get update
+#
+# Install the securityonion-all metapackage:
+# sudo apt-get -y install securityonion-all syslog-ng-core
+#
+# Run the Setup wizard:
+# sudo sosetup
+#
+# If you're using Ubuntu Server (no GUI), then you will need to forward X for this to work:
+# https://groups.google.com/d/msg/security-onion/ceamp2XztVI/ECPOjaIqBwAJ)
+# Follow the prompts.
+#
+# Analyze alerts using the Sguil client, or open a browser to https://localhost where you can access Squert and Kibana.
+# Follow the upgrade process.
+#
+# Please review the PostInstallation page.
+#
