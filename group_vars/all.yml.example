@@ -15,7 +15,9 @@ master:
   ssh_username: ''
   sguil_server_name: 'securityonion'
   sguil_client_username: 'onionuser'
-  sguil_client_password_1: 'asdfasdf'
+  # CHANGEME: placeholder only. Override in your real group_vars/all.yml
+  # (gitignored) via Ansible Vault; never commit a real password here.
+  sguil_client_password_1: 'CHANGEME'
   snorby_email: 'onionuser@example.com'
 master_services:
   snorby_enabled: 'yes'
