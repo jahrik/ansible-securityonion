@@ -1,0 +1,93 @@
+---
+# Stages a Security Onion appliance install: adds the (legacy) Ubuntu PPA,
+# installs the securityonion-all metapackage, and templates sosetup.conf for
+# the interactive setup wizard. The wizard itself and post-install steps are
+# intentionally left commented out below -- see README.md / AGENTS.md for why.
+
+- name: Add securityonion repo
+  ansible.builtin.apt_repository:
+    repo: "{{ securityonion_ppa }}"
+    state: present
+  when: ansible_facts['distribution'] == 'Ubuntu'
+  tags:
+    - securityonion
+    - securityonion:apt
+
+- name: Configure MySQL not to prompt for root password
+  ansible.builtin.debconf:
+    name: debconf
+    question: debconf/frontend
+    value: noninteractive
+    vtype: select
+  when: ansible_facts['distribution'] == 'Ubuntu'
+  tags:
+    - securityonion
+    - securityonion:apt
+
+- name: Install packages
+  ansible.builtin.apt:
+    name: "{{ securityonion_packages }}"
+    state: present
+    update_cache: true
+  when: ansible_facts['distribution'] == 'Ubuntu'
+  tags:
+    - securityonion
+    - securityonion:apt
+
+- name: Generate sosetup.conf
+  ansible.builtin.template:
+    src: sosetup.conf.j2
+    dest: /etc/nsm/sosetup.conf
+    owner: root
+    group: root
+    mode: "0600"
+  no_log: true
+  tags:
+    - securityonion
+    - securityonion:setup
+
+# ---------------------------------------------------------------------------
+# Disabled by design. Running sosetup unattended against a live appliance is
+# risky (it partitions/reconfigures services) and hasn't been validated
+# against a current Security Onion release -- the PPA above is long dead.
+# This role stops at staging sosetup.conf; running the wizard is a deliberate
+# manual step. Kept here, commented, as a record of the intended next steps.
+# ---------------------------------------------------------------------------
+#   - name: Allow SSH access
+#     community.general.ufw:
+#       rule: allow
+#       port: '2222'
+#     tags: [ "securityonion:firewall" ]
+#
+#   - name: Run sosetup -f sosetup.conf
+#     ignore_errors: true
+#     ansible.builtin.shell: "echo 'yes' | sosetup -f /etc/nsm/sosetup.conf | tee /var/log/sosetup.log"
+#     args:
+#       chdir: /etc/nsm/
+#       creates: /etc/nsm/sosetup_initial.lock
+#     changed_when: true
+#     tags: [ "securityonion:setup" ]
+#
+#   - name: Wait for server to come back
+#     ansible.builtin.wait_for:
+#       host: "{{ inventory_hostname }}"
+#       state: started
+#     delegate_to: localhost
+#     become: false
+#
+#   # Run setup again, then post installation:
+#   - name: Generate local.rules
+#     ansible.builtin.template:
+#       src: local.rules.j2
+#       dest: /etc/nsm/rules/local.rules
+#       owner: sguil
+#       group: sguil
+#       mode: "0600"
+#     tags: [ "securityonion:setup" ]
+
+# Manual steps after this role runs (full detail in README.md):
+# 1. Install a fresh Ubuntu host (do NOT enable disk/home encryption or
+#    automatic updates).
+# 2. Run this role to stage the repo, packages, and /etc/nsm/sosetup.conf.
+# 3. SSH in and run: sudo sosetup -f /etc/nsm/sosetup.conf
+# 4. Review the Security Onion Post-Installation docs.
