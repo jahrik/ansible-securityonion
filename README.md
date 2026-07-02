@@ -27,7 +27,7 @@ Include the role in your playbook:
 Or run the bundled thin wrapper directly:
 
 ```bash
-ansible-playbook -i inventory.ini playbook.yml
+ansible-playbook -i <your-inventory> playbook.yml
 ```
 
 Set real values (interfaces, IPs, credentials) in your own `group_vars`/`host_vars`, and put

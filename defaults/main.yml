@@ -13,11 +13,11 @@ securityonion_packages:
 management:
   mgmt_interface: "eth0"
   mgmt_config_type: "static"
-  address: "192.168.10.105"
+  address: "192.0.2.105"
   netmask: "255.255.255.0"
-  gateway: "192.168.10.1"
+  gateway: "192.0.2.1"
   nameserver: ["8.8.8.8", "8.8.4.4"]
-  domain: "dojo.io"
+  domain: "example.invalid"
 
 sniffing:
   sniffing_interfaces: ["eth1"]
@@ -45,7 +45,6 @@ elsa:
 services:
   ossec_agent_enabled: "yes"
   ossec_agent_level: "5"
-  salt: "yes"
 
 sensor:
   sensor: "1"

@@ -13,7 +13,7 @@
     - securityonion
     - securityonion:apt
 
-- name: Configure MySQL not to prompt for root password
+- name: Set debconf frontend to noninteractive
   ansible.builtin.debconf:
     name: debconf
     question: debconf/frontend
@@ -42,6 +42,7 @@
     group: root
     mode: "0600"
   no_log: true
+  when: ansible_facts['distribution'] == 'Ubuntu'
   tags:
     - securityonion
     - securityonion:setup
