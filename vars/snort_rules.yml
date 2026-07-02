@@ -1,4 +1,0 @@
----
-icmp:
-  src_hosts_ignore: []
-  dst_hosts_ignore: []

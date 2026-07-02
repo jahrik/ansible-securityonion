@@ -1,32 +1,73 @@
-# ansible-securityonion
+# jahrik.securityonion
 
-Ansible role/playbook for deploying and configuring [SecurityOnion](https://securityonion.net/).
+[![CI/CD](https://github.com/jahrik/ansible-securityonion/actions/workflows/cicd.yml/badge.svg)](https://github.com/jahrik/ansible-securityonion/actions/workflows/cicd.yml)
+[![Ansible Galaxy](https://img.shields.io/badge/ansible--galaxy-jahrik.securityonion-blue?logo=ansible)](https://galaxy.ansible.com/ui/standalone/roles/jahrik/securityonion/)
 
-This repository configures an Ubuntu host to run SecurityOnion. It adds the stable SecurityOnion PPA, ensures non-interactive database installation, installs the `securityonion-all` metapackage, and templates out `sosetup.conf` for the Setup wizard.
+Stages a [Security Onion](https://securityonion.net/) appliance install on Ubuntu: adds the
+`securityonion/stable` PPA, disables the interactive MySQL prompt, installs the
+`securityonion-all` metapackage, and templates `/etc/nsm/sosetup.conf` for the setup wizard.
 
-## Example Usage
+**The full appliance install is intentionally disabled.** Running `sosetup` unattended
+reconfigures partitions and services on a live box, and the upstream PPA this role targets is
+long dead — there's nothing safe to converge end-to-end in CI. `tasks/main.yml` keeps the
+wizard invocation, firewall rule, and `local.rules` deployment as commented-out reference tasks;
+running `sosetup` itself is a deliberate manual step after this role finishes staging the host.
 
-Run the playbook against your inventory:
+## Usage
+
+Include the role in your playbook:
+
+```yaml
+- hosts: all
+  become: true
+  roles:
+    - jahrik.securityonion
+```
+
+Or run the bundled thin wrapper directly:
 
 ```bash
-ansible-playbook -i inventory.ini playbook.yml
+ansible-playbook -i <your-inventory> playbook.yml
 ```
 
-Example `inventory.ini`:
+Set real values (interfaces, IPs, credentials) in your own `group_vars`/`host_vars`, and put
+`sguil_client_password_1` in Ansible Vault — never commit a real password.
 
-```ini
-[onion]
-onion ansible_host=192.168.10.105
-```
+## Variables
 
-## Testing and Development
+Key variables (see `defaults/main.yml` for the full list):
 
-We use `uv` for Python dependency management and `molecule` for testing. To lint the code and run the test suite locally:
+| Variable | Default | Description |
+|---|---|---|
+| `securityonion_ppa` | `ppa:securityonion/stable` | PPA added on Ubuntu hosts. |
+| `securityonion_packages` | `[syslog-ng-core, securityonion-all]` | Packages installed. |
+| `management.mgmt_interface` | `eth0` | Management NIC for `sosetup.conf`. |
+| `sniffing.sniffing_interfaces` | `[eth1]` | Interfaces to sniff. |
+| `master.sguil_client_password_1` | `CHANGEME` | Sguil/Squert/ELSA/Snorby password — override via Vault. |
+
+## Manual steps after this role runs
+
+1. Install a fresh Ubuntu host (do NOT enable disk/home encryption or automatic updates).
+2. Run this role to stage the repo, packages, and `/etc/nsm/sosetup.conf`.
+3. SSH in and run: `sudo sosetup -f /etc/nsm/sosetup.conf`
+4. Review the Security Onion Post-Installation docs.
+
+## Testing
 
 ```bash
 uv sync
 source .venv/bin/activate
 yamllint .
 ansible-lint
-molecule test
+ansible-playbook playbook.yml --syntax-check
 ```
+
+CI runs lint and a syntax check only — see [AGENTS.md](AGENTS.md) for why.
+
+## License
+
+MIT
+
+## Author
+
+jahrik@gmail.com
